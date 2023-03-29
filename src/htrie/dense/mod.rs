@@ -201,7 +201,8 @@ where K: AsPrimitive<usize> + core::fmt::Debug + Bounded + core::hash::Hash + Fr
                     // Consume bucket and make a trie out of it
                     let trie = NodeType::Trie(T::new_split(bucket, self.threshold));
                     // Place new child at K
-                    std::mem::replace(&mut *self._internal_pointer[k], trie);
+                    let _ = std::mem::replace(&mut *self._internal_pointer[k], trie);
+                    // No memory leak: `bucket` is used.
                 }
             }
             return true
@@ -216,7 +217,9 @@ where K: AsPrimitive<usize> + core::fmt::Debug + Bounded + core::hash::Hash + Fr
                     // Range can only be one here so we ignore it.
 
                     // Now replace the old Hybrid with Pure type
-                    std::mem::replace(&mut self[key], NodeType::Pure(table));
+                    let _ = std::mem::replace(&mut self[key], NodeType::Pure(table));
+
+                    // No memory leak: `table` is used.
                 }
             }
 

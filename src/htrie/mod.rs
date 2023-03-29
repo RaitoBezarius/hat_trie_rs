@@ -116,7 +116,7 @@ where K: Copy + core::hash::Hash + PartialEq + PartialOrd + Sized,
                     NodeType::Pure(child) | NodeType::Hybrid((child, _)) => {
                         // For Pure/Hybrid type, it's `ArrayHash` that contains whole remaining key.
                         // We can simply leverage `get` method using remaining key.
-                        return child.get(&key[offset..].into())
+                        return child.coerce_get(key[offset..].into())
                     }
                 }
             } else {
@@ -173,7 +173,7 @@ where K: Copy + core::hash::Hash + PartialEq + PartialOrd + Sized,
                 },
                 NodeType::Hybrid((bucket, _)) | NodeType::Pure(bucket) => {
                     while end > i {
-                        if let Some(v) = bucket.smart_get(&key[i..end]) {
+                        if let Some(v) = bucket.coerce_get(&key[i..end]) {
                             return Some((&key[..end], v))
                         }
                         end -= 1;
@@ -218,10 +218,10 @@ where K: Copy + core::hash::Hash + PartialEq + PartialOrd + Sized,
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(ref mut bucket) = self.bucket {
-            // Resume iterating over query and use smart_get method to find if such key exist
+            // Resume iterating over query and use coerce_get method to find if such key exist
             for i in (self.cursor + self.cur_len)..=self.query.len() {
                 let cur_key = &self.query[self.cursor..i];
-                if let Some(v) = bucket.smart_get(cur_key) {
+                if let Some(v) = bucket.coerce_get(cur_key) {
                     self.cur_len = i - self.cursor + 1;
                     return Some((&self.query[..i], v))
                 }
@@ -267,11 +267,11 @@ where K: Copy + core::hash::Hash + PartialEq + PartialOrd + Sized,
                 }
             }
 
-            // Mirror a code above to iterating on query element and use smart_get to find if key exist
+            // Mirror a code above to iterating on query element and use coerce_get to find if key exist
             if let Some(ref mut bucket) = self.bucket {
                 for i in (self.cursor + self.cur_len)..=self.query.len() {
                     let cur_key = &self.query[self.cursor..i];
-                    if let Some(v) = bucket.smart_get(cur_key) {
+                    if let Some(v) = bucket.coerce_get(cur_key) {
                         self.cur_len = i - self.cursor + 1;
                         return Some((&self.query[..i], v))
                     }
